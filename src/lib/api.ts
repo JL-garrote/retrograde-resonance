@@ -16,7 +16,7 @@ export interface Mensaje {
 	createdAt: string | null;
 }
 
-const API_BASE = import.meta.env.PUBLIC_API_URL ?? "http://localhost:8080";
+const API_BASE = import.meta.env.PUBLIC_API_URL ?? "https://chatbot-kzkr.onrender.com";
 
 const ACCESS_TOKEN_KEY = "aura_access_token";
 const REFRESH_TOKEN_KEY = "aura_refresh_token";

@@ -68,13 +68,13 @@ src/
 
 ### Requisitos
 - Node.js ≥ 22.12
-- La API backend corriendo (por defecto en `http://localhost:8080`)
+- La API backend corriendo (por defecto en `https://chatbot-kzkr.onrender.com`)
 
 ### Configuración
 Creá un archivo `.env` en la raíz (ver `.env` existente como referencia):
 
 ```
-PUBLIC_API_URL=http://localhost:8080
+PUBLIC_API_URL=https://chatbot-kzkr.onrender.com
 ```
 
 ### Comandos
