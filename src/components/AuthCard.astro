@@ -1,0 +1,228 @@
+---
+export interface Props {
+	logoSrc?: string;
+}
+
+const {
+	logoSrc = "https://lh3.googleusercontent.com/aida/AP1WRLvzAOE49bFaVPnTgliHtgAULQyEVkFq4IhbJJ49f8foxJu3sve4FnmOy3wIdij8MpPWSyCI3HDJNV338jz6BCeNsC4e_v2qULmK9asiD6e_Rz1NTfeWhkyIOwSRat8bO7d_h6vYQwsSU1j4fXjUCal7teYqiNEHxfAcl7foatus0g9AtFOd7z9U1Lqf5evGnPmHlmaiMwZYvA_cjIseTCisOt4osrHGK8NM0u8UYeRmcED4LWXsW2GsaYmy",
+} = Astro.props;
+---
+
+<div class="w-full max-w-md bg-surface-container-lowest rounded-xl shadow-lg p-lg sm:p-xl relative overflow-hidden transition-all duration-300">
+	<div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-surface-tint"></div>
+
+	<div class="flex flex-col items-center mb-xl">
+		<div class="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center mb-md shadow-sm relative group cursor-pointer">
+			<img alt="Aura Chat Logo" class="w-10 h-10 object-contain transition-transform duration-300 group-hover:scale-110" src={logoSrc} />
+			<div class="absolute inset-0 rounded-full border border-primary/20 opacity-0 group-hover:opacity-100 group-hover:scale-125 transition-all duration-500"></div>
+		</div>
+		<h1 class="font-headline-lg text-on-surface text-center transition-opacity duration-300" id="authTitle">Bienvenido de nuevo</h1>
+		<p class="font-body-sm text-on-surface-variant text-center mt-sm">Accede a tu panel de control de IA.</p>
+	</div>
+
+	<div class="flex w-full mb-lg p-xs bg-surface-container rounded-lg relative overflow-hidden">
+		<div
+			class="absolute left-1 top-1 bottom-1 w-[calc(50%-4px)] bg-surface-container-lowest rounded-md shadow-sm transition-transform duration-300 ease-in-out transform translate-x-0 pointer-events-none"
+			id="tabIndicator"
+		>
+		</div>
+		<button class="flex-1 font-label-md py-sm text-center text-on-surface relative z-10 transition-colors duration-300" id="loginTab">
+			Login
+		</button>
+		<button
+			class="flex-1 font-label-md py-sm text-center text-on-surface-variant hover:text-on-surface relative z-10 transition-colors duration-300"
+			id="signupTab"
+		>
+			Sign Up
+		</button>
+	</div>
+
+	<p class="hidden font-body-sm text-error text-center -mt-sm mb-md" id="authError"></p>
+
+	<form class="flex flex-col gap-md transition-opacity duration-300" id="authForm">
+		<div class="hidden flex-col gap-xs opacity-0 transform -translate-y-4 transition-all duration-300 h-0 overflow-hidden" id="nameField">
+			<label class="font-label-sm text-on-surface-variant ml-xs" for="name">Nombre Completo</label>
+			<div class="relative group">
+				<span class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">person</span>
+				<input
+					class="w-full bg-surface border border-outline-variant rounded-lg py-sm pl-xl pr-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all"
+					id="name"
+					placeholder="Juan Pérez"
+					type="text"
+				/>
+			</div>
+		</div>
+
+		<div class="flex flex-col gap-xs">
+			<label class="font-label-sm text-on-surface-variant ml-xs" for="email">Correo Electrónico</label>
+			<div class="relative group">
+				<span class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">mail</span>
+				<input
+					class="w-full bg-surface border border-outline-variant rounded-lg py-sm pl-xl pr-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all"
+					id="email"
+					placeholder="tu@email.com"
+					required
+					type="email"
+				/>
+			</div>
+		</div>
+
+		<div class="flex flex-col gap-xs">
+			<label class="font-label-sm text-on-surface-variant ml-xs" for="password">Contraseña</label>
+			<div class="relative group">
+				<span class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">lock</span>
+				<input
+					class="w-full bg-surface border border-outline-variant rounded-lg py-sm pl-xl pr-xl text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all"
+					id="password"
+					placeholder="••••••••"
+					required
+					type="password"
+				/>
+				<button class="absolute right-md top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors focus:outline-none" id="togglePasswordBtn" type="button">
+					<span class="material-symbols-outlined text-[20px]" id="passwordToggleIcon">visibility</span>
+				</button>
+			</div>
+		</div>
+
+		<button class="w-full bg-primary hover:bg-surface-tint text-on-primary font-label-md py-md rounded-lg shadow-sm hover:shadow-md transition-all duration-300 mt-sm flex items-center justify-center gap-sm group" id="submitBtn" type="submit">
+			<span id="submitText">Iniciar Sesión</span>
+			<span class="material-symbols-outlined text-[18px] transform group-hover:translate-x-1 transition-transform">arrow_forward</span>
+		</button>
+	</form>
+
+	<p class="mt-lg text-center font-body-sm text-on-surface-variant">
+		Al continuar, aceptas nuestros <a class="text-primary hover:underline" href="#">Términos de Servicio</a> y <a class="text-primary hover:underline" href="#">Política de Privacidad</a>.
+	</p>
+</div>
+
+<script>
+	import { ApiError, isAuthenticated, login, registro } from "../lib/api";
+
+	if (isAuthenticated()) {
+		window.location.href = "/";
+	}
+
+	let currentMode: "login" | "signup" = "login";
+
+	const tabIndicator = document.getElementById("tabIndicator") as HTMLElement;
+	const loginTab = document.getElementById("loginTab") as HTMLButtonElement;
+	const signupTab = document.getElementById("signupTab") as HTMLButtonElement;
+	const title = document.getElementById("authTitle") as HTMLElement;
+	const nameField = document.getElementById("nameField") as HTMLElement;
+	const nameInput = document.getElementById("name") as HTMLInputElement;
+	const emailInput = document.getElementById("email") as HTMLInputElement;
+	const passwordInput = document.getElementById("password") as HTMLInputElement;
+	const passwordToggleIcon = document.getElementById("passwordToggleIcon") as HTMLElement;
+	const submitText = document.getElementById("submitText") as HTMLElement;
+	const form = document.getElementById("authForm") as HTMLFormElement;
+	const submitBtn = document.getElementById("submitBtn") as HTMLButtonElement;
+	const authError = document.getElementById("authError") as HTMLElement;
+
+	function switchTab(mode: "login" | "signup") {
+		if (currentMode === mode) return;
+		currentMode = mode;
+
+		form.classList.add("opacity-50");
+		title.classList.add("opacity-0");
+		hideError();
+
+		setTimeout(() => {
+			if (mode === "signup") {
+				tabIndicator.classList.remove("translate-x-0");
+				tabIndicator.classList.add("translate-x-[calc(100%+4px)]");
+
+				loginTab.classList.remove("text-on-surface");
+				loginTab.classList.add("text-on-surface-variant");
+				signupTab.classList.remove("text-on-surface-variant");
+				signupTab.classList.add("text-on-surface");
+
+				title.textContent = "Crea tu cuenta";
+				submitText.textContent = "Registrarse";
+
+				nameField.classList.remove("hidden");
+				setTimeout(() => {
+					nameField.classList.remove("opacity-0", "-translate-y-4", "h-0");
+					nameField.classList.add("opacity-100", "translate-y-0", "h-auto");
+				}, 10);
+			} else {
+				tabIndicator.classList.remove("translate-x-[calc(100%+4px)]");
+				tabIndicator.classList.add("translate-x-0");
+
+				signupTab.classList.remove("text-on-surface");
+				signupTab.classList.add("text-on-surface-variant");
+				loginTab.classList.remove("text-on-surface-variant");
+				loginTab.classList.add("text-on-surface");
+
+				title.textContent = "Bienvenido de nuevo";
+				submitText.textContent = "Iniciar Sesión";
+
+				nameField.classList.remove("opacity-100", "translate-y-0", "h-auto");
+				nameField.classList.add("opacity-0", "-translate-y-4", "h-0");
+				setTimeout(() => {
+					nameField.classList.add("hidden");
+				}, 300);
+			}
+
+			form.classList.remove("opacity-50");
+			title.classList.remove("opacity-0");
+		}, 150);
+	}
+
+	function togglePassword() {
+		if (passwordInput.type === "password") {
+			passwordInput.type = "text";
+			passwordToggleIcon.textContent = "visibility_off";
+		} else {
+			passwordInput.type = "password";
+			passwordToggleIcon.textContent = "visibility";
+		}
+	}
+
+	function showError(message: string) {
+		authError.textContent = message;
+		authError.classList.remove("hidden");
+	}
+
+	function hideError() {
+		authError.classList.add("hidden");
+	}
+
+	function setLoading(loading: boolean) {
+		submitBtn.disabled = loading;
+		submitBtn.classList.toggle("opacity-60", loading);
+		submitBtn.classList.toggle("cursor-not-allowed", loading);
+	}
+
+	loginTab.addEventListener("click", () => switchTab("login"));
+	signupTab.addEventListener("click", () => switchTab("signup"));
+	document.getElementById("togglePasswordBtn")?.addEventListener("click", togglePassword);
+
+	form.addEventListener("submit", async (event) => {
+		event.preventDefault();
+		hideError();
+
+		const email = emailInput.value.trim();
+		const password = passwordInput.value;
+
+		setLoading(true);
+		try {
+			if (currentMode === "login") {
+				await login(email, password);
+				window.location.href = "/";
+			} else {
+				const nombreCompleto = nameInput.value.trim();
+				await registro(email, password, nombreCompleto);
+				await login(email, password);
+				window.location.href = "/";
+			}
+		} catch (error) {
+			if (error instanceof ApiError) {
+				showError(error.message);
+			} else {
+				showError("No se pudo conectar con el servidor. Intenta de nuevo.");
+			}
+		} finally {
+			setLoading(false);
+		}
+	});
+</script>

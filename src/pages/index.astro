@@ -1,11 +1,328 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
-
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+import Layout from "../layouts/Layout.astro";
+import Header from "../components/Header.astro";
+import ChatRecientes from "../components/ChatRecientes.astro";
+import ChatIA from "../components/ChatIA.astro";
 ---
 
-<Layout>
-	<Welcome />
+<Layout title="Aura Chat">
+	<ChatRecientes />
+	<Header />
+	<main class="pl-72 pt-16 min-h-screen bg-surface">
+		<div class="flex flex-col w-full h-[calc(100vh-64px)] overflow-hidden bg-surface relative">
+			<!-- Ambient Background Decoration (Subtle Depth) -->
+			<div class="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+				<div class="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-surface-variant/20 to-transparent"></div>
+				<svg
+					class="absolute -top-[20%] -left-[10%] w-[60%] h-[60%] text-surface-container opacity-40 blur-3xl animate-pulse"
+					style="animation-duration: 8s;"
+					viewBox="0 0 200 200"
+					xmlns="http://www.w3.org/2000/svg"
+				>
+					<path
+						d="M44.7,-76.4C58.8,-69.2,71.8,-59.1,79.6,-46.1C87.4,-33.1,90,-16.6,89.1,-0.5C88.2,15.6,83.8,31.2,74.8,43.6C65.8,56,52.2,65.2,37.6,71.5C23,77.8,7.4,81.2,-7.1,79.6C-21.6,78,-35.1,71.4,-47.9,62.8C-60.7,54.2,-72.8,43.6,-80.4,29.9C-88,16.2,-91.1, -0.6,-87.3,-15.8C-83.5,-31,-72.8,-44.6,-60.2,-55.1C-47.6,-65.6,-33.1,-73,-18.2,-75.7C-3.3,-78.4,12,-76.4,26.4,-77.1C40.8,-77.8,55,-85.1,44.7,-76.4Z"
+						fill="currentColor"
+						transform="translate(100 100)"></path>
+				</svg>
+			</div>
+			<div class="flex flex-1 h-full w-full relative z-10">
+				<ChatIA />
+			</div>
+		</div>
+	</main>
 </Layout>
+
+<script>
+	import {
+		crearConversacion,
+		enviarMensaje,
+		isAuthenticated,
+		limpiarMensajes,
+		listarConversaciones,
+		listarMensajes,
+		type Conversacion,
+		type Mensaje,
+	} from "../lib/api";
+
+	if (!isAuthenticated()) {
+		window.location.href = "/login";
+	}
+
+	const chatList = document.getElementById("chatList") as HTMLElement;
+	const newChatBtn = document.getElementById("newChatBtn") as HTMLButtonElement;
+	const chatHistory = document.getElementById("chat-history") as HTMLElement;
+	const messageInput = document.getElementById("messageInput") as HTMLTextAreaElement;
+	const sendBtn = document.getElementById("sendBtn") as HTMLButtonElement;
+	const exportBtn = document.getElementById("exportBtn") as HTMLButtonElement;
+	const clearContextBtn = document.getElementById("clearContextBtn") as HTMLButtonElement;
+
+	const userAvatarSrc = chatHistory.dataset.userAvatar ?? "";
+
+	const LINK_BASE_CLASS =
+		"flex items-center gap-md px-md py-sm rounded-lg text-body-sm transition-all";
+	const LINK_INACTIVE_CLASS = "text-on-surface-variant hover:bg-surface-container hover:text-on-surface";
+	const LINK_ACTIVE_CLASS = "bg-surface-container-high text-on-surface";
+
+	let conversaciones: Conversacion[] = [];
+	let conversacionActualId: number | null = null;
+	let mensajesActuales: Mensaje[] = [];
+	let filtroBusqueda = "";
+
+	function formatTime(iso: string | null): string {
+		if (!iso) return "";
+		return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+	}
+
+	function scrollToBottom() {
+		chatHistory.scrollTop = chatHistory.scrollHeight;
+	}
+
+	function showPlaceholder(text: string, tone: "muted" | "error" = "muted") {
+		chatHistory.innerHTML = "";
+		const p = document.createElement("p");
+		p.className = `text-center font-body-sm mt-xl ${tone === "error" ? "text-error" : "text-on-surface-variant"}`;
+		p.textContent = text;
+		chatHistory.appendChild(p);
+	}
+
+	function renderChatList() {
+		chatList.innerHTML = "";
+		const query = filtroBusqueda.trim().toLowerCase();
+		const visibles = query ? conversaciones.filter((c) => c.titulo.toLowerCase().includes(query)) : conversaciones;
+		for (const conv of visibles) {
+			const a = document.createElement("a");
+			a.href = "#";
+			a.dataset.path = String(conv.id);
+			a.className = `${LINK_BASE_CLASS} ${conv.id === conversacionActualId ? LINK_ACTIVE_CLASS : LINK_INACTIVE_CLASS}`;
+
+			const icon = document.createElement("span");
+			icon.className = "material-symbols-outlined";
+			icon.textContent = "chat_bubble";
+
+			const label = document.createElement("span");
+			label.className = "truncate";
+			label.textContent = conv.titulo;
+
+			a.append(icon, label);
+			a.addEventListener("click", (event) => {
+				event.preventDefault();
+				seleccionarConversacion(conv.id);
+			});
+			chatList.appendChild(a);
+		}
+	}
+
+	async function cargarConversaciones() {
+		try {
+			conversaciones = await listarConversaciones();
+		} catch (error) {
+			console.error("No se pudieron cargar las conversaciones", error);
+			conversaciones = [];
+		}
+		renderChatList();
+	}
+
+	function crearBurbuja(rol: Mensaje["rol"], contenido: string, createdAt: string | null): HTMLElement {
+		const esUsuario = rol === "USER";
+
+		const fila = document.createElement("div");
+		fila.className = `flex w-full max-w-[800px] mx-auto gap-md${esUsuario ? " justify-end" : ""}`;
+
+		const avatar = document.createElement("div");
+		if (esUsuario) {
+			avatar.className = "w-8 h-8 rounded-full bg-surface-container shrink-0 mt-xs shadow-sm overflow-hidden order-2";
+			const img = document.createElement("img");
+			img.alt = "User Profile";
+			img.className = "w-full h-full object-cover";
+			img.src = userAvatarSrc;
+			avatar.appendChild(img);
+		} else {
+			avatar.className = "w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center shrink-0 mt-xs text-primary shadow-sm";
+			const icon = document.createElement("span");
+			icon.className = "material-symbols-outlined text-[18px]";
+			icon.setAttribute("style", "font-variation-settings: 'FILL' 1;");
+			icon.textContent = "smart_toy";
+			avatar.appendChild(icon);
+		}
+
+		const col = document.createElement("div");
+		col.className = `flex flex-col gap-xs max-w-[85%]${esUsuario ? " items-end" : ""}`;
+
+		const label = document.createElement("span");
+		label.className = `font-label-sm text-on-surface-variant ${esUsuario ? "pr-xs" : "pl-xs"}`;
+		label.textContent = `${esUsuario ? "You" : "Assistant"} · ${formatTime(createdAt)}`;
+
+		const bubble = document.createElement("div");
+		bubble.className = esUsuario
+			? "bg-primary text-on-primary px-md py-md rounded-2xl rounded-tr-sm font-body-md shadow-md whitespace-pre-wrap"
+			: "bg-surface-container text-on-surface px-md py-md rounded-2xl rounded-tl-sm font-body-md shadow-[0_2px_10px_-2px_rgba(0,0,0,0.02)] whitespace-pre-wrap";
+		bubble.textContent = contenido;
+
+		col.append(label, bubble);
+		fila.append(avatar, col);
+		return fila;
+	}
+
+	function crearIndicadorEscribiendo(): HTMLElement {
+		const fila = document.createElement("div");
+		fila.className = "flex w-full max-w-[800px] mx-auto gap-md opacity-70";
+		fila.innerHTML = `
+			<div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center shrink-0 mt-xs text-primary shadow-sm">
+				<span class="material-symbols-outlined text-[18px]">smart_toy</span>
+			</div>
+			<div class="bg-surface-container text-on-surface px-md py-sm rounded-2xl rounded-tl-sm flex items-center gap-xs w-fit h-[40px]">
+				<div class="w-2 h-2 bg-on-surface-variant rounded-full animate-bounce" style="animation-delay: 0s;"></div>
+				<div class="w-2 h-2 bg-on-surface-variant rounded-full animate-bounce" style="animation-delay: 0.2s;"></div>
+				<div class="w-2 h-2 bg-on-surface-variant rounded-full animate-bounce" style="animation-delay: 0.4s;"></div>
+			</div>
+		`;
+		return fila;
+	}
+
+	async function seleccionarConversacion(id: number) {
+		conversacionActualId = id;
+		mensajesActuales = [];
+		renderChatList();
+		showPlaceholder("Cargando mensajes…");
+		try {
+			const mensajes = await listarMensajes(id);
+			mensajesActuales = mensajes;
+			if (mensajes.length === 0) {
+				showPlaceholder("Todavía no hay mensajes. Escribí algo para empezar.");
+				return;
+			}
+			chatHistory.innerHTML = "";
+			for (const m of mensajes) {
+				chatHistory.appendChild(crearBurbuja(m.rol, m.contenido, m.createdAt));
+			}
+			scrollToBottom();
+		} catch (error) {
+			console.error("No se pudieron cargar los mensajes", error);
+			showPlaceholder("No se pudieron cargar los mensajes.", "error");
+		}
+	}
+
+	function tituloConversacionActual(): string {
+		return conversaciones.find((c) => c.id === conversacionActualId)?.titulo ?? "conversacion";
+	}
+
+	function exportar() {
+		if (conversacionActualId === null || mensajesActuales.length === 0) {
+			alert("No hay mensajes para exportar todavía.");
+			return;
+		}
+		const lineas = mensajesActuales.map((m) => `[${m.rol}] ${formatTime(m.createdAt)}\n${m.contenido}\n`);
+		const blob = new Blob([lineas.join("\n")], { type: "text/plain;charset=utf-8" });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement("a");
+		a.href = url;
+		a.download = `${tituloConversacionActual().replace(/[^\w\-]+/g, "_")}.txt`;
+		a.click();
+		URL.revokeObjectURL(url);
+	}
+
+	async function limpiarContexto() {
+		if (conversacionActualId === null) return;
+		if (!confirm("¿Limpiar todos los mensajes de esta conversación? Esta acción no se puede deshacer.")) return;
+		try {
+			await limpiarMensajes(conversacionActualId);
+			mensajesActuales = [];
+			showPlaceholder("Todavía no hay mensajes. Escribí algo para empezar.");
+		} catch (error) {
+			console.error("No se pudo limpiar el contexto", error);
+			alert("No se pudo limpiar el contexto.");
+		}
+	}
+
+	async function nuevaConversacion(titulo?: string): Promise<number | null> {
+		try {
+			const { id } = await crearConversacion(titulo);
+			await cargarConversaciones();
+			return id;
+		} catch (error) {
+			console.error("No se pudo crear la conversación", error);
+			return null;
+		}
+	}
+
+	function setSendingState(sending: boolean) {
+		sendBtn.disabled = sending;
+		sendBtn.classList.toggle("opacity-60", sending);
+	}
+
+	async function enviar() {
+		const contenido = messageInput.value.trim();
+		if (!contenido) return;
+
+		if (conversacionActualId === null) {
+			const titulo = contenido.length > 40 ? `${contenido.slice(0, 40)}…` : contenido;
+			const id = await nuevaConversacion(titulo);
+			if (id === null) return;
+			conversacionActualId = id;
+			chatHistory.innerHTML = "";
+		} else if (chatHistory.querySelector("p")) {
+			chatHistory.innerHTML = "";
+		}
+
+		messageInput.value = "";
+		messageInput.style.height = "";
+
+		const ahora = new Date().toISOString();
+		chatHistory.appendChild(crearBurbuja("USER", contenido, ahora));
+		mensajesActuales.push({ id: -1, conversationId: conversacionActualId, rol: "USER", contenido, tokensUsados: null, createdAt: ahora });
+		scrollToBottom();
+
+		const typing = crearIndicadorEscribiendo();
+		chatHistory.appendChild(typing);
+		scrollToBottom();
+		setSendingState(true);
+
+		try {
+			const conversacionId = conversacionActualId;
+			if (conversacionId === null) return;
+			const { respuesta } = await enviarMensaje(conversacionId, contenido);
+			typing.remove();
+			const respondidoEn = new Date().toISOString();
+			chatHistory.appendChild(crearBurbuja("ASSISTANT", respuesta, respondidoEn));
+			mensajesActuales.push({ id: -1, conversationId: conversacionId, rol: "ASSISTANT", contenido: respuesta, tokensUsados: null, createdAt: respondidoEn });
+			scrollToBottom();
+			await cargarConversaciones();
+			renderChatList();
+		} catch (error) {
+			console.error("No se pudo enviar el mensaje", error);
+			typing.remove();
+			const err = document.createElement("p");
+			err.className = "text-center font-body-sm text-error mt-md";
+			err.textContent = "No se pudo enviar el mensaje.";
+			chatHistory.appendChild(err);
+			scrollToBottom();
+		} finally {
+			setSendingState(false);
+		}
+	}
+
+	newChatBtn.addEventListener("click", async () => {
+		const id = await nuevaConversacion();
+		if (id !== null) {
+			await seleccionarConversacion(id);
+		}
+	});
+
+	sendBtn.addEventListener("click", enviar);
+	messageInput.addEventListener("keydown", (event) => {
+		if (event.key === "Enter" && !event.shiftKey) {
+			event.preventDefault();
+			enviar();
+		}
+	});
+
+	exportBtn.addEventListener("click", exportar);
+	clearContextBtn.addEventListener("click", limpiarContexto);
+
+	document.addEventListener("chat-search", (event) => {
+		filtroBusqueda = (event as CustomEvent<{ query: string }>).detail.query;
+		renderChatList();
+	});
+
+	cargarConversaciones();
+</script>

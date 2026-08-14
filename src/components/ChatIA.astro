@@ -1,0 +1,68 @@
+---
+export interface Props {
+	assistantName?: string;
+	modelName?: string;
+}
+
+const { assistantName = "Data Analysis Assistant", modelName = "GPT-4o" } = Astro.props;
+
+const userProfileSrc =
+	"https://lh3.googleusercontent.com/aida-public/AB6AXuCjBJOTkXDfJ_odDvcoABl5bkQc09qn2WC_kb4nZ47jEKDa8DU5dXEVT-6SQ7kbSJ2ajc0y8Wf4yYaWAEb8qPqV5NXUD6X4qAG0nTnT2GxUuZKDzoZ_P_GQzYeFIX9VmiBBqAnz6432idLy7plTjM7crSwXiFGRHs5EUtZLCdvWqkmgtSGVaXXb6UXlDIN4wgw7raor68Lkk_8sWFD8ODGfmRWGxtnucaeLM6YO1O7SCetikSgAHZQe2Q";
+---
+
+<div class="flex flex-col flex-1 h-full bg-surface shadow-[-4px_0_24px_-10px_rgba(0,0,0,0.05)] relative z-20">
+	<!-- Chat Header (Contextual) -->
+	<div class="h-16 shrink-0 flex items-center justify-between px-lg bg-surface/80 backdrop-blur-md z-30 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.02)]">
+		<div class="flex items-center gap-md">
+			<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-primary">
+				<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+			</div>
+			<div>
+				<h2 class="font-headline-lg-mobile text-on-surface">{assistantName}</h2>
+				<p class="font-label-sm text-on-surface-variant flex items-center gap-sm">
+					<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+					Online · Model: {modelName}
+				</p>
+			</div>
+		</div>
+		<div class="flex gap-sm">
+			<button class="p-sm text-on-surface-variant hover:bg-surface-container rounded-lg transition-colors" id="exportBtn" title="Export Chat">
+				<span class="material-symbols-outlined">download</span>
+			</button>
+			<button class="p-sm text-on-surface-variant hover:bg-surface-container rounded-lg transition-colors" id="clearContextBtn" title="Clear Context">
+				<span class="material-symbols-outlined">cleaning_services</span>
+			</button>
+		</div>
+	</div>
+
+	<!-- Scrollable Message History -->
+	<div class="flex-1 overflow-y-auto px-lg py-xl space-y-[24px] scroll-smooth pb-32" data-user-avatar={userProfileSrc} id="chat-history">
+		<p class="text-center font-body-sm text-on-surface-variant mt-xl" id="emptyState">
+			Selecciona una conversación o creá una nueva para empezar a chatear.
+		</p>
+	</div>
+
+	<!-- Chat Input Area (Fixed Bottom, Centered max-width) -->
+	<div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-surface via-surface/95 to-transparent pt-xl pb-lg px-lg z-30">
+		<div class="max-w-[800px] mx-auto relative group">
+			<div class="flex items-end bg-surface shadow-[0_4px_30px_-5px_rgba(0,0,0,0.1)] rounded-2xl p-sm ring-1 ring-outline-variant/30 focus-within:ring-2 focus-within:ring-primary transition-all">
+				<div class="flex-1 relative min-h-[44px]">
+					<textarea
+						class="w-full h-full min-h-[44px] max-h-[200px] bg-transparent resize-none outline-none py-sm px-sm font-body-md text-on-surface placeholder-on-surface-variant/60"
+						id="messageInput"
+						oninput="this.style.height = ''; this.style.height = Math.min(this.scrollHeight, 200) + 'px'"
+						placeholder="Message Assistant..."
+						rows="1"></textarea>
+				</div>
+				<div class="flex items-center gap-xs shrink-0 mb-[2px]">
+					<button class="p-sm bg-primary text-on-primary hover:bg-primary/90 shadow-sm rounded-xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center" id="sendBtn">
+						<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">send</span>
+					</button>
+				</div>
+			</div>
+			<div class="text-center mt-sm">
+				<span class="font-body-sm text-[10px] text-on-surface-variant">Assistant can make mistakes. Verify important data.</span>
+			</div>
+		</div>
+	</div>
+</div>

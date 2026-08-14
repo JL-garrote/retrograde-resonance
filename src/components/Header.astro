@@ -1,0 +1,108 @@
+---
+export interface NavLink {
+	label: string;
+	path: string;
+	current?: boolean;
+}
+
+export interface Props {
+	title?: string;
+	logoSrc?: string;
+	profileSrc?: string;
+	navLinks?: NavLink[];
+}
+
+const {
+	title = "Aura Chat",
+	logoSrc = "https://lh3.googleusercontent.com/aida-public/AB6AXuAYW6MHnsvoUjUes-ZOs8-8Gwh4hjW7HPQGCQ2Uv-KtHk3GKQSnvi8VTtbjQWq1TyKVWZOE9AqCP6YHKAE-YiCJWgPPIqjWt_n9D-gHUly6_jPu7Y2CY50V0zivemmA5ipllj4qN4f23HHvD1g09E7615R2s63kx7VarX1PJc2T3sQhr7yxX0GtnKzS4944RQvLYzQvN5OP3fpwsElQlI-8O0fdQzJTGJCXyiMCJhgV-L4dP4eTlM9kOA",
+	profileSrc = "https://lh3.googleusercontent.com/aida-public/AB6AXuCjBJOTkXDfJ_odDvcoABl5bkQc09qn2WC_kb4nZ47jEKDa8DU5dXEVT-6SQ7kbSJ2ajc0y8Wf4yYaWAEb8qPqV5NXUD6X4qAG0nTnT2GxUuZKDzoZ_P_GQzYeFIX9VmiBBqAnz6432idLy7plTjM7crSwXiFGRHs5EUtZLCdvWqkmgtSGVaXXb6UXlDIN4wgw7raor68Lkk_8sWFD8ODGfmRWGxtnucaeLM6YO1O7SCetikSgAHZQe2Q",
+
+} = Astro.props;
+---
+
+<header class="fixed top-0 w-full h-16 bg-surface-container-lowest/80 backdrop-blur-xl border-b border-outline-variant z-50 flex items-center justify-between px-lg">
+	<div class="flex items-center gap-md">
+		<img alt="Minimalist Chatbot Logo" class="h-8 w-auto object-contain" src={logoSrc} />
+		<span class="font-headline-md text-on-surface hidden sm:block">{title}</span>
+	</div>
+
+	<div class="flex items-center gap-md ml-auto">
+		<div class="relative">
+			<button class="p-sm text-on-surface-variant hover:bg-surface-container rounded-full" id="searchBtn" title="Buscar conversaciones">
+				<span class="material-symbols-outlined">search</span>
+			</button>
+			<div class="hidden absolute right-0 top-full mt-sm w-64 bg-surface-container-lowest border border-outline-variant rounded-lg shadow-lg p-sm z-50" id="searchPanel">
+				<input
+					class="w-full bg-surface border border-outline-variant rounded-md px-sm py-xs text-body-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary transition-all"
+					id="searchInput"
+					placeholder="Buscar conversación..."
+					type="text"
+				/>
+			</div>
+		</div>
+		<div class="relative">
+			<button class="p-sm text-on-surface-variant hover:bg-surface-container rounded-full" id="notificationsBtn" title="Notificaciones">
+				<span class="material-symbols-outlined">notifications</span>
+			</button>
+			<div class="hidden absolute right-0 top-full mt-sm w-64 bg-surface-container-lowest border border-outline-variant rounded-lg shadow-lg p-md z-50" id="notificationsPanel">
+				<p class="font-body-sm text-on-surface-variant text-center">No tenés notificaciones nuevas.</p>
+			</div>
+		</div>
+		<div class="relative">
+			<button class="block" id="profileBtn" title="Cuenta">
+				<img
+					alt="Profile"
+					class="w-8 h-8 rounded-full border border-outline-variant hover:ring-2 ring-primary transition-all cursor-pointer"
+					src={profileSrc}
+				/>
+			</button>
+			<div class="hidden absolute right-0 top-full mt-sm w-48 bg-surface-container-lowest border border-outline-variant rounded-lg shadow-lg py-xs z-50" id="profileMenu">
+				<button class="w-full flex items-center gap-sm px-md py-sm font-label-sm text-on-surface hover:bg-surface-container transition-colors" id="logoutBtn">
+					<span class="material-symbols-outlined text-[18px]">logout</span>
+					Cerrar sesión
+				</button>
+			</div>
+		</div>
+	</div>
+</header>
+
+<script>
+	import { logout } from "../lib/api";
+
+	const panels: HTMLElement[] = [];
+
+	function closeAllPanels() {
+		for (const panel of panels) panel.classList.add("hidden");
+	}
+
+	function wireToggle(buttonId: string, panelId: string) {
+		const button = document.getElementById(buttonId);
+		const panel = document.getElementById(panelId);
+		if (!button || !panel) return;
+		panels.push(panel);
+
+		button.addEventListener("click", (event) => {
+			event.stopPropagation();
+			const isOpen = !panel.classList.contains("hidden");
+			closeAllPanels();
+			panel.classList.toggle("hidden", isOpen);
+		});
+		panel.addEventListener("click", (event) => event.stopPropagation());
+	}
+
+	wireToggle("searchBtn", "searchPanel");
+	wireToggle("notificationsBtn", "notificationsPanel");
+	wireToggle("profileBtn", "profileMenu");
+
+	document.addEventListener("click", closeAllPanels);
+
+	const searchInput = document.getElementById("searchInput") as HTMLInputElement | null;
+	searchInput?.addEventListener("input", () => {
+		document.dispatchEvent(new CustomEvent("chat-search", { detail: { query: searchInput.value } }));
+	});
+
+	document.getElementById("logoutBtn")?.addEventListener("click", async () => {
+		await logout();
+		window.location.href = "/login";
+	});
+</script>

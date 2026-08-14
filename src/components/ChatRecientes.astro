@@ -1,0 +1,37 @@
+---
+export interface ChatItem {
+	id: string;
+	title: string;
+}
+
+export interface Props {
+	chats?: ChatItem[];
+}
+
+const { chats = [] } = Astro.props;
+---
+
+<aside class="fixed left-0 top-16 h-[calc(100vh-64px)] w-72 bg-surface-container-lowest border-r border-outline-variant z-40 overflow-y-auto">
+	<div class="p-lg">
+		<div class="flex items-center justify-between mb-lg">
+			<span class="font-label-sm text-on-secondary-container tracking-wider uppercase">Recent Chats</span>
+			<button class="p-xs text-on-surface-variant hover:text-primary transition-colors" id="newChatBtn" title="Nueva conversación">
+				<span class="material-symbols-outlined">add_comment</span>
+			</button>
+		</div>
+		<nav class="space-y-base" id="chatList" data-active-classes="bg-surface-container-high text-on-surface">
+			{
+				chats.map((chat: ChatItem) => (
+					<a
+						class="flex items-center gap-md px-md py-sm rounded-lg text-body-sm text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all"
+						data-path={chat.id}
+						href="#"
+					>
+						<span class="material-symbols-outlined">chat_bubble</span>
+						<span class="truncate">{chat.title}</span>
+					</a>
+				))
+			}
+		</nav>
+	</div>
+</aside>
