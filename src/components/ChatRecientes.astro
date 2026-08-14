@@ -11,7 +11,15 @@ export interface Props {
 const { chats = [] } = Astro.props;
 ---
 
-<aside class="fixed left-0 top-16 h-[calc(100vh-64px)] w-72 bg-surface-container-lowest border-r border-outline-variant z-40 overflow-y-auto">
+<div
+	class="hidden fixed inset-0 top-16 bg-black/50 z-30 lg:hidden"
+	id="sidebarBackdrop"
+></div>
+
+<aside
+	class="fixed left-0 top-16 h-[calc(100vh-64px)] w-72 max-w-[85vw] bg-surface-container-lowest border-r border-outline-variant z-40 overflow-y-auto -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out"
+	id="sidebar"
+>
 	<div class="p-lg">
 		<div class="flex items-center justify-between mb-lg">
 			<span class="font-label-sm text-on-secondary-container tracking-wider uppercase">Recent Chats</span>
@@ -35,3 +43,45 @@ const { chats = [] } = Astro.props;
 		</nav>
 	</div>
 </aside>
+
+<script>
+	const sidebar = document.getElementById("sidebar") as HTMLElement;
+	const backdrop = document.getElementById("sidebarBackdrop") as HTMLElement;
+
+	function openSidebar() {
+		sidebar.classList.remove("-translate-x-full");
+		backdrop.classList.remove("hidden");
+	}
+
+	function closeSidebar() {
+		sidebar.classList.add("-translate-x-full");
+		backdrop.classList.add("hidden");
+	}
+
+	function isSidebarOpen() {
+		return !sidebar.classList.contains("-translate-x-full");
+	}
+
+	document.addEventListener("toggle-sidebar", () => {
+		if (isSidebarOpen()) {
+			closeSidebar();
+		} else {
+			openSidebar();
+		}
+	});
+
+	backdrop.addEventListener("click", closeSidebar);
+
+	sidebar.addEventListener("click", (event) => {
+		const link = (event.target as HTMLElement).closest("a[data-path]");
+		if (link && window.matchMedia("(max-width: 1023px)").matches) {
+			closeSidebar();
+		}
+	});
+
+	window.addEventListener("resize", () => {
+		if (window.matchMedia("(min-width: 1024px)").matches) {
+			backdrop.classList.add("hidden");
+		}
+	});
+</script>

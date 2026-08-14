@@ -20,18 +20,21 @@ const {
 } = Astro.props;
 ---
 
-<header class="fixed top-0 w-full h-16 bg-surface-container-lowest/80 backdrop-blur-xl border-b border-outline-variant z-50 flex items-center justify-between px-lg">
-	<div class="flex items-center gap-md">
-		<img alt="Minimalist Chatbot Logo" class="h-8 w-auto object-contain" src={logoSrc} />
-		<span class="font-headline-md text-on-surface hidden sm:block">{title}</span>
+<header class="fixed top-0 w-full h-16 bg-surface-container-lowest/80 backdrop-blur-xl border-b border-outline-variant z-50 flex items-center justify-between px-md sm:px-lg gap-sm">
+	<div class="flex items-center gap-sm sm:gap-md min-w-0">
+		<button class="p-xs -ml-xs text-on-surface-variant hover:bg-surface-container rounded-full lg:hidden shrink-0" id="menuBtn" title="Abrir menú">
+			<span class="material-symbols-outlined">menu</span>
+		</button>
+		<img alt="Minimalist Chatbot Logo" class="h-8 w-auto object-contain shrink-0" src={logoSrc} />
+		<span class="font-headline-md text-on-surface hidden sm:block truncate">{title}</span>
 	</div>
 
-	<div class="flex items-center gap-md ml-auto">
+	<div class="flex items-center gap-xs sm:gap-md ml-auto shrink-0">
 		<div class="relative">
 			<button class="p-sm text-on-surface-variant hover:bg-surface-container rounded-full" id="searchBtn" title="Buscar conversaciones">
 				<span class="material-symbols-outlined">search</span>
 			</button>
-			<div class="hidden absolute right-0 top-full mt-sm w-64 bg-surface-container-lowest border border-outline-variant rounded-lg shadow-lg p-sm z-50" id="searchPanel">
+			<div class="hidden absolute right-0 top-full mt-sm w-[min(16rem,calc(100vw-2rem))] bg-surface-container-lowest border border-outline-variant rounded-lg shadow-lg p-sm z-50" id="searchPanel">
 				<input
 					class="w-full bg-surface border border-outline-variant rounded-md px-sm py-xs text-body-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary transition-all"
 					id="searchInput"
@@ -44,7 +47,7 @@ const {
 			<button class="p-sm text-on-surface-variant hover:bg-surface-container rounded-full" id="notificationsBtn" title="Notificaciones">
 				<span class="material-symbols-outlined">notifications</span>
 			</button>
-			<div class="hidden absolute right-0 top-full mt-sm w-64 bg-surface-container-lowest border border-outline-variant rounded-lg shadow-lg p-md z-50" id="notificationsPanel">
+			<div class="hidden absolute right-0 top-full mt-sm w-[min(16rem,calc(100vw-2rem))] bg-surface-container-lowest border border-outline-variant rounded-lg shadow-lg p-md z-50" id="notificationsPanel">
 				<p class="font-body-sm text-on-surface-variant text-center">No tenés notificaciones nuevas.</p>
 			</div>
 		</div>
@@ -56,7 +59,7 @@ const {
 					src={profileSrc}
 				/>
 			</button>
-			<div class="hidden absolute right-0 top-full mt-sm w-48 bg-surface-container-lowest border border-outline-variant rounded-lg shadow-lg py-xs z-50" id="profileMenu">
+			<div class="hidden absolute right-0 top-full mt-sm w-[min(12rem,calc(100vw-2rem))] bg-surface-container-lowest border border-outline-variant rounded-lg shadow-lg py-xs z-50" id="profileMenu">
 				<button class="w-full flex items-center gap-sm px-md py-sm font-label-sm text-on-surface hover:bg-surface-container transition-colors" id="logoutBtn">
 					<span class="material-symbols-outlined text-[18px]">logout</span>
 					Cerrar sesión
@@ -95,6 +98,11 @@ const {
 	wireToggle("profileBtn", "profileMenu");
 
 	document.addEventListener("click", closeAllPanels);
+
+	document.getElementById("menuBtn")?.addEventListener("click", (event) => {
+		event.stopPropagation();
+		document.dispatchEvent(new CustomEvent("toggle-sidebar"));
+	});
 
 	const searchInput = document.getElementById("searchInput") as HTMLInputElement | null;
 	searchInput?.addEventListener("input", () => {
