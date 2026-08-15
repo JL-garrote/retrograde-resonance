@@ -43,6 +43,7 @@ import ChatIA from "../components/ChatIA.astro";
 		type Conversacion,
 		type Mensaje,
 	} from "../lib/api";
+	import { agregarNotificacion } from "../lib/notifications";
 
 	if (!isAuthenticated()) {
 		window.location.href = "/login";
@@ -387,6 +388,7 @@ import ChatIA from "../components/ChatIA.astro";
 			scrollToBottom();
 			await cargarConversaciones();
 			renderChatList();
+			agregarNotificacion(tituloConversacionActual(), respuesta.length > 100 ? `${respuesta.slice(0, 100)}…` : respuesta);
 		} catch (error) {
 			console.error("No se pudo enviar el mensaje", error);
 			typing.remove();
@@ -395,6 +397,7 @@ import ChatIA from "../components/ChatIA.astro";
 			err.textContent = "No se pudo enviar el mensaje.";
 			chatHistory.appendChild(err);
 			scrollToBottom();
+			agregarNotificacion("Error al enviar mensaje", "No se pudo obtener respuesta del asistente. Revisá tu conexión.", "error");
 		} finally {
 			setSendingState(false);
 		}

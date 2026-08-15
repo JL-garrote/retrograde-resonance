@@ -1,4 +1,6 @@
 ---
+import ThemeToggle from "./ThemeToggle.astro";
+
 export interface NavLink {
 	label: string;
 	path: string;
@@ -30,6 +32,7 @@ const {
 	</div>
 
 	<div class="flex items-center gap-xs sm:gap-md ml-auto shrink-0">
+		<ThemeToggle />
 		<div class="relative">
 			<button class="p-sm text-on-surface-variant hover:bg-surface-container rounded-full" id="searchBtn" title="Buscar conversaciones">
 				<span class="material-symbols-outlined">search</span>
@@ -44,11 +47,16 @@ const {
 			</div>
 		</div>
 		<div class="relative">
-			<button class="p-sm text-on-surface-variant hover:bg-surface-container rounded-full" id="notificationsBtn" title="Notificaciones">
+			<button class="relative p-sm text-on-surface-variant hover:bg-surface-container rounded-full" id="notificationsBtn" title="Notificaciones">
 				<span class="material-symbols-outlined">notifications</span>
+				<span class="hidden absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-error ring-2 ring-surface-container-lowest" id="notifBadge"></span>
 			</button>
-			<div class="hidden absolute right-0 top-full mt-sm w-[min(16rem,calc(100vw-2rem))] bg-surface-container-lowest border border-outline-variant rounded-lg shadow-lg p-md z-50" id="notificationsPanel">
-				<p class="font-body-sm text-on-surface-variant text-center">No tenés notificaciones nuevas.</p>
+			<div class="hidden absolute right-0 top-full mt-sm w-[min(20rem,calc(100vw-2rem))] bg-surface-container-lowest border border-outline-variant rounded-lg shadow-lg z-50 overflow-hidden" id="notificationsPanel">
+				<div class="flex items-center justify-between px-md py-sm border-b border-outline-variant">
+					<span class="font-label-sm text-on-surface">Notificaciones</span>
+					<button class="font-label-sm text-primary hover:underline" id="clearNotifsBtn" type="button">Limpiar</button>
+				</div>
+				<div class="max-h-80 overflow-y-auto" id="notifList"></div>
 			</div>
 		</div>
 		<div class="relative">
@@ -71,6 +79,15 @@ const {
 
 <script>
 	import { logout } from "../lib/api";
+	import {
+		contarNoLeidas,
+		limpiarNotificaciones,
+		listarNotificaciones,
+		marcarTodasLeidas,
+		onNotificacionesCambiaron,
+		solicitarPermisoNotificaciones,
+		type Notificacion,
+	} from "../lib/notifications";
 
 	const panels: HTMLElement[] = [];
 
@@ -111,6 +128,67 @@ const {
 
 	document.getElementById("logoutBtn")?.addEventListener("click", async () => {
 		await logout();
+		limpiarNotificaciones();
 		window.location.href = "/login";
+	});
+
+	const notifBadge = document.getElementById("notifBadge") as HTMLElement;
+	const notifList = document.getElementById("notifList") as HTMLElement;
+	const notificationsBtn = document.getElementById("notificationsBtn") as HTMLButtonElement;
+	const clearNotifsBtn = document.getElementById("clearNotifsBtn") as HTMLButtonElement;
+
+	function formatearFecha(iso: string): string {
+		return new Date(iso).toLocaleString([], { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+	}
+
+	function crearItemNotificacion(n: Notificacion): HTMLElement {
+		const item = document.createElement("div");
+		item.className = `px-md py-sm border-b border-outline-variant last:border-b-0 ${n.leida ? "" : "bg-surface-container"}`;
+
+		const titulo = document.createElement("p");
+		titulo.className = `font-label-sm ${n.tipo === "error" ? "text-error" : "text-on-surface"}`;
+		titulo.textContent = n.titulo;
+
+		const cuerpo = document.createElement("p");
+		cuerpo.className = "font-body-sm text-on-surface-variant truncate";
+		cuerpo.textContent = n.cuerpo;
+
+		const hora = document.createElement("p");
+		hora.className = "font-body-sm text-[10px] text-on-surface-variant mt-xs";
+		hora.textContent = formatearFecha(n.createdAt);
+
+		item.append(titulo, cuerpo, hora);
+		return item;
+	}
+
+	function renderNotificaciones() {
+		const notificaciones = listarNotificaciones();
+		notifList.innerHTML = "";
+
+		if (notificaciones.length === 0) {
+			const vacio = document.createElement("p");
+			vacio.className = "font-body-sm text-on-surface-variant text-center p-md";
+			vacio.textContent = "No tenés notificaciones nuevas.";
+			notifList.appendChild(vacio);
+		} else {
+			for (const n of notificaciones) {
+				notifList.appendChild(crearItemNotificacion(n));
+			}
+		}
+
+		notifBadge.classList.toggle("hidden", contarNoLeidas() === 0);
+	}
+
+	onNotificacionesCambiaron(renderNotificaciones);
+	renderNotificaciones();
+
+	notificationsBtn.addEventListener("click", () => {
+		solicitarPermisoNotificaciones();
+		window.setTimeout(marcarTodasLeidas, 1500);
+	});
+
+	clearNotifsBtn.addEventListener("click", (event) => {
+		event.stopPropagation();
+		limpiarNotificaciones();
 	});
 </script>

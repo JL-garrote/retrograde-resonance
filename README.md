@@ -24,8 +24,9 @@ Aplicación de chat con IA (Google Gemini) con autenticación propia, historial 
 
 ### Cuenta y UI
 - Menú desplegable en la foto de perfil (header) para cerrar sesión.
-- Panel de notificaciones (placeholder honesto: no hay backend de notificaciones todavía).
-- Diseño responsive, tema oscuro, tipografía y paleta de colores basada en tokens de Material Design 3, implementado con Tailwind.
+- **Notificaciones** generadas en el cliente: se registra una entrada cada vez que el asistente responde o falla el envío de un mensaje, con badge de no leídas en la campana, marcado automático como leídas al abrir el panel y botón para limpiarlas. Si la pestaña está en segundo plano y el usuario dio permiso, además se dispara una notificación nativa del navegador (`Notification` API). Se guardan en `localStorage`, no hay backend de notificaciones (push, por email, etc.).
+- **Modo claro / oscuro**: botón de alternancia (header y login) que cambia toda la paleta de tokens de Material Design 3 al instante mediante variables CSS. La preferencia se guarda en `localStorage` (`aura_theme`) y se aplica antes del primer render para evitar parpadeos; por defecto es oscuro.
+- Diseño responsive, tipografía y paleta de colores basada en tokens de Material Design 3, implementado con Tailwind.
 
 ### Seguridad
 - Contraseñas nunca se guardan ni se comparan en texto plano.
@@ -55,11 +56,13 @@ src/
 │  ├─ Header.astro          # barra superior: logo, búsqueda, notificaciones, menú de perfil
 │  ├─ ChatRecientes.astro   # sidebar de conversaciones
 │  ├─ ChatIA.astro          # panel de chat: mensajes, input, exportar/limpiar
-│  └─ AuthCard.astro        # formulario de login / registro
+│  ├─ AuthCard.astro        # formulario de login / registro
+│  └─ ThemeToggle.astro     # botón para alternar modo claro/oscuro
 ├─ layouts/
-│  └─ Layout.astro          # <head> compartido (fuentes, config de Tailwind)
+│  └─ Layout.astro          # <head> compartido (fuentes, config de Tailwind, variables de tema)
 ├─ lib/
-│  └─ api.ts                # cliente HTTP: auth, tokens, conversaciones, mensajes
+│  ├─ api.ts                # cliente HTTP: auth, tokens, conversaciones, mensajes
+│  └─ notifications.ts      # notificaciones en cliente (localStorage + Notification API)
 └─ pages/
    ├─ index.astro           # chat (protegido, redirige a /login sin sesión)
    └─ login.astro           # autenticación
@@ -112,4 +115,4 @@ Todas las rutas bajo `/api/**` requieren el header `Authorization: Bearer <acces
 
 ## Pendiente / fuera de alcance actual
 
-- Notificaciones reales: el panel existe pero no hay ningún evento que lo alimente.
+- Notificaciones push/por email desde el servidor: hoy solo existen como actividad generada en el cliente (ver arriba).

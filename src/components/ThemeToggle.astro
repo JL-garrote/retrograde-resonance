@@ -1,0 +1,41 @@
+---
+export interface Props {
+	class?: string;
+}
+
+const { class: className = "" } = Astro.props;
+---
+
+<button
+	class={`p-sm text-on-surface-variant hover:bg-surface-container rounded-full ${className}`}
+	id="themeToggleBtn"
+	title="Cambiar tema"
+	type="button"
+>
+	<span class="material-symbols-outlined" id="themeIcon">light_mode</span>
+</button>
+
+<script>
+	const themeToggleBtn = document.getElementById("themeToggleBtn") as HTMLButtonElement;
+	const themeIcon = document.getElementById("themeIcon") as HTMLElement;
+
+	function temaActual(): "light" | "dark" {
+		return document.documentElement.dataset.theme === "light" ? "light" : "dark";
+	}
+
+	function actualizarIconoTema() {
+		themeIcon.textContent = temaActual() === "dark" ? "light_mode" : "dark_mode";
+	}
+
+	function aplicarTema(tema: "light" | "dark") {
+		document.documentElement.dataset.theme = tema;
+		localStorage.setItem("aura_theme", tema);
+		actualizarIconoTema();
+	}
+
+	actualizarIconoTema();
+
+	themeToggleBtn.addEventListener("click", () => {
+		aplicarTema(temaActual() === "dark" ? "light" : "dark");
+	});
+</script>

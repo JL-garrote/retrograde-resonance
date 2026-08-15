@@ -11,7 +11,15 @@ const { title = "Aura Chat" } = Astro.props;
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta name="color-scheme" content="dark light" />
 		<title>{title}</title>
+		<script is:inline>
+			(function () {
+				var stored = localStorage.getItem("aura_theme");
+				var theme = stored === "light" ? "light" : "dark";
+				document.documentElement.dataset.theme = theme;
+			})();
+		</script>
 		<style>
 			@layer base {
 				html,
@@ -22,6 +30,7 @@ const { title = "Aura Chat" } = Astro.props;
 				body {
 					overscroll-behavior: none;
 					overflow-x: hidden;
+					transition: background-color 0.2s ease;
 				}
 				main > :first-child {
 					margin-top: 0 !important;
@@ -33,6 +42,97 @@ const { title = "Aura Chat" } = Astro.props;
 			::-webkit-scrollbar {
 				display: none;
 			}
+
+			:root {
+				color-scheme: dark;
+				--color-surface-container-highest: 45 52 73;
+				--color-outline-variant: 67 70 85;
+				--color-outline: 51 65 85;
+				--color-surface: 11 19 38;
+				--color-on-primary-fixed-variant: 0 62 168;
+				--color-inverse-on-surface: 40 48 68;
+				--color-inverse-surface: 218 226 253;
+				--color-surface-container-high: 34 42 61;
+				--color-on-secondary-container: 169 186 211;
+				--color-on-primary-container: 238 239 255;
+				--color-on-surface: 248 250 252;
+				--color-on-background: 218 226 253;
+				--color-surface-bright: 49 57 77;
+				--color-surface-variant: 45 52 73;
+				--color-on-tertiary-container: 255 237 230;
+				--color-on-secondary: 33 49 69;
+				--color-error-container: 147 0 10;
+				--color-secondary: 183 200 225;
+				--color-on-secondary-fixed-variant: 56 72 93;
+				--color-primary-fixed-dim: 180 197 255;
+				--color-on-primary: 0 42 120;
+				--color-on-tertiary: 88 30 0;
+				--color-success: 16 185 129;
+				--color-surface-container-low: 19 27 46;
+				--color-on-error-container: 255 218 214;
+				--color-secondary-container: 58 74 95;
+				--color-on-surface-variant: 195 198 215;
+				--color-on-secondary-fixed: 11 28 48;
+				--color-error: 239 68 68;
+				--color-primary-fixed: 219 225 255;
+				--color-secondary-fixed-dim: 183 200 225;
+				--color-tertiary: 255 181 150;
+				--color-surface-container: 23 31 51;
+				--color-primary: 180 197 255;
+				--color-surface-container-lowest: 6 14 32;
+				--color-surface-tint: 180 197 255;
+				--color-tertiary-fixed: 255 219 205;
+				--color-surface-dim: 11 19 38;
+				--color-on-tertiary-fixed-variant: 125 45 0;
+				--color-secondary-fixed: 211 228 254;
+				--color-on-primary-fixed: 0 23 75;
+				--color-background: 11 19 38;
+				--color-tertiary-fixed-dim: 255 181 150;
+				--color-tertiary-container: 188 72 0;
+				--color-on-error: 105 0 5;
+				--color-primary-container: 37 99 235;
+				--color-on-tertiary-fixed: 54 15 0;
+				--color-inverse-primary: 0 83 219;
+			}
+
+			:root[data-theme="light"] {
+				color-scheme: light;
+				--color-surface-container-highest: 223 226 237;
+				--color-outline-variant: 196 198 207;
+				--color-outline: 116 119 127;
+				--color-surface: 247 249 253;
+				--color-inverse-on-surface: 248 250 252;
+				--color-inverse-surface: 11 19 38;
+				--color-surface-container-high: 229 232 242;
+				--color-on-secondary-container: 11 28 48;
+				--color-on-primary-container: 0 23 75;
+				--color-on-surface: 18 21 28;
+				--color-on-background: 18 21 28;
+				--color-surface-bright: 247 249 253;
+				--color-surface-variant: 223 226 237;
+				--color-on-tertiary-container: 54 15 0;
+				--color-on-secondary: 255 255 255;
+				--color-error-container: 255 218 214;
+				--color-secondary: 69 89 111;
+				--color-on-primary: 255 255 255;
+				--color-on-tertiary: 255 255 255;
+				--color-surface-container-low: 241 243 250;
+				--color-on-error-container: 65 0 2;
+				--color-secondary-container: 211 228 254;
+				--color-on-surface-variant: 68 71 78;
+				--color-error: 186 26 26;
+				--color-tertiary: 154 59 0;
+				--color-surface-container: 235 238 247;
+				--color-primary: 37 99 235;
+				--color-surface-container-lowest: 255 255 255;
+				--color-surface-tint: 37 99 235;
+				--color-surface-dim: 217 222 233;
+				--color-background: 247 249 253;
+				--color-tertiary-container: 255 219 205;
+				--color-on-error: 255 255 255;
+				--color-primary-container: 219 225 255;
+				--color-inverse-primary: 180 197 255;
+			}
 		</style>
 		<script is:inline src="https://cdn.tailwindcss.com"></script>
 		<script is:inline id="tailwind-config">
@@ -41,54 +141,54 @@ const { title = "Aura Chat" } = Astro.props;
 				theme: {
 					extend: {
 						colors: {
-							"surface-container-highest": "#2d3449",
-							"outline-variant": "#434655",
-							outline: "#334155",
-							surface: "#0b1326",
-							"on-primary-fixed-variant": "#003ea8",
-							"inverse-on-surface": "#283044",
-							"inverse-surface": "#dae2fd",
-							"surface-container-high": "#222a3d",
-							"on-secondary-container": "#a9bad3",
-							"on-primary-container": "#eeefff",
-							"on-surface": "#f8fafc",
-							"on-background": "#dae2fd",
-							"surface-bright": "#31394d",
-							"surface-variant": "#2d3449",
-							"on-tertiary-container": "#ffede6",
-							"on-secondary": "#213145",
-							"error-container": "#93000a",
-							secondary: "#b7c8e1",
-							"on-secondary-fixed-variant": "#38485d",
-							"primary-fixed-dim": "#b4c5ff",
-							"on-primary": "#002a78",
-							"on-tertiary": "#581e00",
-							success: "#10b981",
-							"surface-container-low": "#131b2e",
-							"on-error-container": "#ffdad6",
-							"secondary-container": "#3a4a5f",
-							"on-surface-variant": "#c3c6d7",
-							"on-secondary-fixed": "#0b1c30",
-							error: "#ef4444",
-							"primary-fixed": "#dbe1ff",
-							"secondary-fixed-dim": "#b7c8e1",
-							tertiary: "#ffb596",
-							"surface-container": "#171f33",
-							primary: "#b4c5ff",
-							"surface-container-lowest": "#060e20",
-							"surface-tint": "#b4c5ff",
-							"tertiary-fixed": "#ffdbcd",
-							"surface-dim": "#0b1326",
-							"on-tertiary-fixed-variant": "#7d2d00",
-							"secondary-fixed": "#d3e4fe",
-							"on-primary-fixed": "#00174b",
-							background: "#0b1326",
-							"tertiary-fixed-dim": "#ffb596",
-							"tertiary-container": "#bc4800",
-							"on-error": "#690005",
-							"primary-container": "#2563eb",
-							"on-tertiary-fixed": "#360f00",
-							"inverse-primary": "#0053db",
+							"surface-container-highest": "rgb(var(--color-surface-container-highest) / <alpha-value>)",
+							"outline-variant": "rgb(var(--color-outline-variant) / <alpha-value>)",
+							outline: "rgb(var(--color-outline) / <alpha-value>)",
+							surface: "rgb(var(--color-surface) / <alpha-value>)",
+							"on-primary-fixed-variant": "rgb(var(--color-on-primary-fixed-variant) / <alpha-value>)",
+							"inverse-on-surface": "rgb(var(--color-inverse-on-surface) / <alpha-value>)",
+							"inverse-surface": "rgb(var(--color-inverse-surface) / <alpha-value>)",
+							"surface-container-high": "rgb(var(--color-surface-container-high) / <alpha-value>)",
+							"on-secondary-container": "rgb(var(--color-on-secondary-container) / <alpha-value>)",
+							"on-primary-container": "rgb(var(--color-on-primary-container) / <alpha-value>)",
+							"on-surface": "rgb(var(--color-on-surface) / <alpha-value>)",
+							"on-background": "rgb(var(--color-on-background) / <alpha-value>)",
+							"surface-bright": "rgb(var(--color-surface-bright) / <alpha-value>)",
+							"surface-variant": "rgb(var(--color-surface-variant) / <alpha-value>)",
+							"on-tertiary-container": "rgb(var(--color-on-tertiary-container) / <alpha-value>)",
+							"on-secondary": "rgb(var(--color-on-secondary) / <alpha-value>)",
+							"error-container": "rgb(var(--color-error-container) / <alpha-value>)",
+							secondary: "rgb(var(--color-secondary) / <alpha-value>)",
+							"on-secondary-fixed-variant": "rgb(var(--color-on-secondary-fixed-variant) / <alpha-value>)",
+							"primary-fixed-dim": "rgb(var(--color-primary-fixed-dim) / <alpha-value>)",
+							"on-primary": "rgb(var(--color-on-primary) / <alpha-value>)",
+							"on-tertiary": "rgb(var(--color-on-tertiary) / <alpha-value>)",
+							success: "rgb(var(--color-success) / <alpha-value>)",
+							"surface-container-low": "rgb(var(--color-surface-container-low) / <alpha-value>)",
+							"on-error-container": "rgb(var(--color-on-error-container) / <alpha-value>)",
+							"secondary-container": "rgb(var(--color-secondary-container) / <alpha-value>)",
+							"on-surface-variant": "rgb(var(--color-on-surface-variant) / <alpha-value>)",
+							"on-secondary-fixed": "rgb(var(--color-on-secondary-fixed) / <alpha-value>)",
+							error: "rgb(var(--color-error) / <alpha-value>)",
+							"primary-fixed": "rgb(var(--color-primary-fixed) / <alpha-value>)",
+							"secondary-fixed-dim": "rgb(var(--color-secondary-fixed-dim) / <alpha-value>)",
+							tertiary: "rgb(var(--color-tertiary) / <alpha-value>)",
+							"surface-container": "rgb(var(--color-surface-container) / <alpha-value>)",
+							primary: "rgb(var(--color-primary) / <alpha-value>)",
+							"surface-container-lowest": "rgb(var(--color-surface-container-lowest) / <alpha-value>)",
+							"surface-tint": "rgb(var(--color-surface-tint) / <alpha-value>)",
+							"tertiary-fixed": "rgb(var(--color-tertiary-fixed) / <alpha-value>)",
+							"surface-dim": "rgb(var(--color-surface-dim) / <alpha-value>)",
+							"on-tertiary-fixed-variant": "rgb(var(--color-on-tertiary-fixed-variant) / <alpha-value>)",
+							"secondary-fixed": "rgb(var(--color-secondary-fixed) / <alpha-value>)",
+							"on-primary-fixed": "rgb(var(--color-on-primary-fixed) / <alpha-value>)",
+							background: "rgb(var(--color-background) / <alpha-value>)",
+							"tertiary-fixed-dim": "rgb(var(--color-tertiary-fixed-dim) / <alpha-value>)",
+							"tertiary-container": "rgb(var(--color-tertiary-container) / <alpha-value>)",
+							"on-error": "rgb(var(--color-on-error) / <alpha-value>)",
+							"primary-container": "rgb(var(--color-primary-container) / <alpha-value>)",
+							"on-tertiary-fixed": "rgb(var(--color-on-tertiary-fixed) / <alpha-value>)",
+							"inverse-primary": "rgb(var(--color-inverse-primary) / <alpha-value>)",
 						},
 						borderRadius: {
 							DEFAULT: "0.25rem",

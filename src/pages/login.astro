@@ -1,10 +1,12 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import AuthCard from "../components/AuthCard.astro";
+import ThemeToggle from "../components/ThemeToggle.astro";
 ---
 
 <Layout title="Aura Chat — Acceso">
 	<main class="min-h-screen bg-surface">
+		<ThemeToggle class="fixed top-md right-md sm:top-lg sm:right-lg z-50 bg-surface-container-lowest/80 backdrop-blur-xl border border-outline-variant" />
 		<div class="flex flex-col w-full min-h-screen items-center justify-center p-md sm:p-lg bg-surface">
 			<AuthCard />
 		</div>
