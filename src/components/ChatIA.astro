@@ -55,11 +55,15 @@ const userProfileSrc =
 						rows="1"></textarea>
 				</div>
 				<div class="flex items-center gap-xs shrink-0 mb-[2px]">
+					<button class="p-sm text-on-surface-variant hover:bg-surface-container shadow-sm rounded-xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center" id="micBtn" title="Dictar mensaje por voz" type="button">
+						<span class="material-symbols-outlined" id="micIcon">mic</span>
+					</button>
 					<button class="p-sm bg-primary text-on-primary hover:bg-primary/90 shadow-sm rounded-xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center" id="sendBtn">
 						<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">send</span>
 					</button>
 				</div>
 			</div>
+			<p class="hidden text-center font-body-sm text-error mt-sm" id="micStatus"></p>
 			<div class="text-center mt-sm">
 				<span class="font-body-sm text-[10px] text-on-surface-variant">Assistant can make mistakes. Verify important data.</span>
 			</div>

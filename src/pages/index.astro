@@ -55,6 +55,8 @@ import ChatIA from "../components/ChatIA.astro";
 	const sendBtn = document.getElementById("sendBtn") as HTMLButtonElement;
 	const exportBtn = document.getElementById("exportBtn") as HTMLButtonElement;
 	const clearContextBtn = document.getElementById("clearContextBtn") as HTMLButtonElement;
+	const micBtn = document.getElementById("micBtn") as HTMLButtonElement | null;
+	const micStatus = document.getElementById("micStatus") as HTMLElement | null;
 
 	const userAvatarSrc = chatHistory.dataset.userAvatar ?? "";
 
@@ -67,6 +69,102 @@ import ChatIA from "../components/ChatIA.astro";
 	let conversacionActualId: number | null = null;
 	let mensajesActuales: Mensaje[] = [];
 	let filtroBusqueda = "";
+
+	function ajustarAlturaInput() {
+		messageInput.style.height = "";
+		messageInput.style.height = `${Math.min(messageInput.scrollHeight, 200)}px`;
+	}
+
+	const SpeechRecognitionCtor: any = (window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition;
+	let recognition: any = null;
+	let dictando = false;
+	let textoBaseDictado = "";
+
+	function detenerDictado() {
+		if (recognition && dictando) recognition.stop();
+	}
+
+	const MENSAJES_ERROR_DICTADO: Record<string, string> = {
+		"not-allowed": "Permiso de micrófono denegado. Habilitá el acceso al micrófono para este sitio.",
+		"permission-denied": "Permiso de micrófono denegado. Habilitá el acceso al micrófono para este sitio.",
+		"audio-capture": "No se detectó ningún micrófono conectado.",
+		network:
+			"No se pudo conectar con el servicio de reconocimiento de voz de Google. Brave y otros navegadores basados en Chromium bloquean este servicio por privacidad: probá con Chrome o Edge, o revisá la configuración de privacidad de tu navegador.",
+		"service-not-allowed":
+			"El navegador bloqueó el servicio de reconocimiento de voz (frecuente en Brave por privacidad). Probá con Chrome o Edge.",
+	};
+
+	function mostrarErrorDictado(codigo: string) {
+		if (!micStatus) return;
+		micStatus.textContent = MENSAJES_ERROR_DICTADO[codigo] ?? "No se pudo iniciar el dictado por voz.";
+		micStatus.classList.remove("hidden");
+	}
+
+	function ocultarErrorDictado() {
+		micStatus?.classList.add("hidden");
+	}
+
+	if (micBtn) {
+		if (!SpeechRecognitionCtor) {
+			micBtn.disabled = true;
+			micBtn.title = "Tu navegador no soporta dictado por voz";
+			micBtn.classList.add("opacity-40", "cursor-not-allowed");
+		} else {
+			recognition = new SpeechRecognitionCtor();
+			recognition.lang = "es-AR";
+			recognition.continuous = true;
+			recognition.interimResults = true;
+
+			recognition.addEventListener("start", () => {
+				dictando = true;
+				ocultarErrorDictado();
+				micBtn.classList.add("text-error", "bg-error/10", "animate-pulse");
+			});
+			recognition.addEventListener("end", () => {
+				dictando = false;
+				micBtn.classList.remove("text-error", "bg-error/10", "animate-pulse");
+			});
+			recognition.addEventListener("error", (event: any) => {
+				dictando = false;
+				micBtn.classList.remove("text-error", "bg-error/10", "animate-pulse");
+				if (event.error !== "no-speech" && event.error !== "aborted") {
+					console.error("Error de dictado por voz", event.error);
+					mostrarErrorDictado(event.error);
+				}
+			});
+			recognition.addEventListener("result", (event: any) => {
+				let interim = "";
+				let final = "";
+				for (let i = event.resultIndex; i < event.results.length; i++) {
+					const transcript = event.results[i][0].transcript;
+					if (event.results[i].isFinal) {
+						final += transcript;
+					} else {
+						interim += transcript;
+					}
+				}
+				if (final) {
+					textoBaseDictado = `${textoBaseDictado}${final} `;
+				}
+				messageInput.value = `${textoBaseDictado}${interim}`;
+				ajustarAlturaInput();
+			});
+
+			micBtn.addEventListener("click", () => {
+				if (dictando) {
+					recognition.stop();
+					return;
+				}
+				textoBaseDictado = messageInput.value.trim();
+				textoBaseDictado = textoBaseDictado ? `${textoBaseDictado} ` : "";
+				try {
+					recognition.start();
+				} catch {
+					// el reconocimiento ya estaba iniciado
+				}
+			});
+		}
+	}
 
 	function formatTime(iso: string | null): string {
 		if (!iso) return "";
@@ -251,6 +349,7 @@ import ChatIA from "../components/ChatIA.astro";
 	}
 
 	async function enviar() {
+		detenerDictado();
 		const contenido = messageInput.value.trim();
 		if (!contenido) return;
 
