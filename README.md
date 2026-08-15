@@ -20,6 +20,7 @@ Aplicación de chat con IA (Google Gemini) con autenticación propia, historial 
 - **Limpiar contexto**: borra el historial de mensajes de la conversación actual (con confirmación).
 - Sidebar de conversaciones recientes con **búsqueda/filtro en vivo** por título.
 - Estado vacío y manejo de errores de red visibles en la interfaz (no solo en consola).
+- **Dictado por voz**: botón de micrófono que transcribe lo hablado al campo de mensaje usando la Web Speech API del navegador (sin subir audio al backend). Ver [limitaciones conocidas](#limitaciones-conocidas).
 
 ### Cuenta y UI
 - Menú desplegable en la foto de perfil (header) para cerrar sesión.
@@ -101,6 +102,13 @@ PUBLIC_API_URL=https://chatbot-kzkr.onrender.com
 | `DELETE` | `/api/conversaciones/{id}/mensajes` | Limpia el historial de mensajes |
 
 Todas las rutas bajo `/api/**` requieren el header `Authorization: Bearer <accessToken>`.
+
+## Limitaciones conocidas
+
+- **Dictado por voz solo funciona bien en Chrome/Edge.** Se implementa con la Web Speech API (`webkitSpeechRecognition`), que depende de un servicio de reconocimiento de voz de Google al que el navegador se conecta por red.
+  - **Brave** bloquea ese servicio por defecto (no incluye la API key de Google por privacidad): el botón existe pero al presionarlo falla con un error `network` y se muestra un aviso explicándolo.
+  - **Firefox y Safari** no soportan la API, así que el botón queda deshabilitado automáticamente con un tooltip.
+  - Recomendación: usar Chrome o Edge para esta función.
 
 ## Pendiente / fuera de alcance actual
 
